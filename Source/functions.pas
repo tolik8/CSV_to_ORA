@@ -5,7 +5,7 @@ unit functions;
 interface
 
 uses
-    Classes, SysUtils, RegExpr;
+  Classes, SysUtils, RegExpr;
 
 function CheckCellType(input: String): String;
 function CheckCellTypeRE(input: String; RegEx: Array of String): String;

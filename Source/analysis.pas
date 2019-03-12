@@ -6,7 +6,7 @@ interface
 
 uses
     Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Grids, StdCtrls,
-    ExtCtrls, ComCtrls, functions, data, filter;
+    ExtCtrls, ComCtrls, functions, filter;
 
 type
 
@@ -16,10 +16,10 @@ type
         ButtonFinish: TButton;
         EditService: TEdit;
         EditUser: TEdit;
-        GroupBox1: TGroupBox;
+        GroupBoxOracle: TGroupBox;
         LabelService: TLabel;
         LabelUser: TLabel;
-        Memo1: TMemo;
+        MemoSQL: TMemo;
         Panel1: TPanel;
         SG: TStringGrid;
         Splitter1: TSplitter;
@@ -33,7 +33,9 @@ type
        StartDir, csv: String;
        RegEx: Array of String;
        UseRegEx: Boolean;
-       Fields: TStringList;
+       FieldList: TStringList;
+       ColCount, RowCount: Integer;
+       data: Array of Array of String;
     end;
 
 var
@@ -49,6 +51,7 @@ procedure TFormAnalysis.FormShow(Sender: TObject);
 var
     col, row: Integer;
 begin
+    // Сделать в ячейках пустое значение вместо нуля
     for col := 1 to SG.ColCount - 1 do
         for row := 1 to SG.RowCount - 1 do
             if SG.Cells[col, row] = '0' then SG.Cells[col, row] := '';
@@ -63,15 +66,17 @@ begin
 
     FieldName := SG.Cells[0, SG.Row];
     FindType := SG.Columns.Items[SG.Col - 1].Title.Caption;
-    for col := 0 to FormData.SG.ColCount - 1 do
-        if FieldName.ToUpper = FormData.SG.Cells[col, 0].ToUpper
+
+    for col := 0 to ColCount - 1 do
+        if FieldName.ToUpper = FieldList.Strings[col].ToUpper
             then FieldId := col;
 
     FormFilter.SG.Clear;
-    FormFilter.SG.ColCount := FormData.SG.ColCount;
+    FormFilter.SG.ColCount := ColCount;
     FormFilter.SG.RowCount := 1;
-    for col := 0 to FormData.SG.ColCount - 1 do
-        FormFilter.SG.Cells[col, 0] := FormData.SG.Cells[col, 0];
+
+    for col := 0 to ColCount - 1 do
+        FormFilter.SG.Cells[col, 0] := FieldList.Strings[col].ToUpper;
 
     case FindType of
         'INT':   FieldType := 'I';
@@ -82,14 +87,14 @@ begin
         'ERR':   FieldType := 'E';
     end;
 
-    for row := 1 to FormData.SG.RowCount - 1 do begin
+    for row := 0 to RowCount - 1 do begin
       if UseRegEx
-          then CheckResult := CheckCellTypeRE(FormData.SG.Cells[FieldId, row], RegEx)
-          else CheckResult := CheckCellType(FormData.SG.Cells[FieldId, row]);
+          then CheckResult := CheckCellTypeRE(data[FieldId, row], RegEx)
+          else CheckResult := CheckCellType(data[FieldId, row]);
       if CheckResult = FieldType then begin
             FormFilter.SG.RowCount := FormFilter.SG.RowCount + 1;
-            for col := 0 to FormData.SG.ColCount - 1 do
-                FormFilter.SG.Cells[col, FormFilter.SG.RowCount - 1] := FormData.SG.Cells[col, row];
+            for col := 0 to ColCount - 1 do
+                FormFilter.SG.Cells[col, FormFilter.SG.RowCount - 1] := data[col, row];
         end;
     end;
 
@@ -113,16 +118,16 @@ begin
     end;
 
     // Create file create.sql
-    Memo1.Lines.SaveToFile(StartDir + 'create.sql');
+    MemoSQL.Lines.SaveToFile(StartDir + 'create.sql');
 
     // Create file loader.ctl
     FileName := 'loader.ctl';
     if FileExists(StartDir + 'Template\' + FileName) then begin
         s.LoadFromFile(StartDir + 'Template\' + FileName);
         s.Text := StringReplace(s.Text, '#csv#', csv, [rfReplaceAll]);
-        TableName := GetTableName(Memo1.Lines);
+        TableName := GetTableName(MemoSQL.Lines);
         s.Text := StringReplace(s.Text, '#table#', TableName, [rfReplaceAll]);
-        s.Text := StringReplace(s.Text, '#fields#', fields.DelimitedText, [rfReplaceAll]);
+        s.Text := StringReplace(s.Text, '#fields#', FieldList.DelimitedText, [rfReplaceAll]);
         s.SaveToFile(StartDir + FileName);
     end;
 

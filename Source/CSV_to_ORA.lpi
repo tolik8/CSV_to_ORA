@@ -37,7 +37,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="6">
+    <Units Count="5">
       <Unit0>
         <Filename Value="CSV_to_ORA.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -54,26 +54,19 @@
         <IsPartOfProject Value="True"/>
       </Unit2>
       <Unit3>
-        <Filename Value="map.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="FormMap"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-      </Unit3>
-      <Unit4>
         <Filename Value="analysis.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="FormAnalysis"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit4>
-      <Unit5>
+      </Unit3>
+      <Unit4>
         <Filename Value="filter.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="FormFilter"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit5>
+      </Unit4>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

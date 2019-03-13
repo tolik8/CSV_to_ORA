@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, sdflaz, main, functions, map, analysis, filter;
+  Forms, sdflaz, main, functions, analysis, filter;
 
 {$R *.res}
 
@@ -16,7 +16,6 @@ begin
     Application.Scaled := True;
     Application.Initialize;
     Application.CreateForm(TForm1, Form1);
-        Application.CreateForm(TFormMap, FormMap);
         Application.CreateForm(TFormAnalysis, FormAnalysis);
         Application.CreateForm(TFormFilter, FormFilter);
     Application.Run;

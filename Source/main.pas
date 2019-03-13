@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, Grids,
   EditBtn, ComCtrls, Buttons,
   IniFiles, SdfData, LConvEncoding, LazUTF8,
-  analysis, map,
+  analysis,
   functions, Fields;
 
 type
@@ -18,7 +18,6 @@ type
 
   TForm1 = class(TForm)
     ButtonOpen: TButton;
-    ButtonMap: TButton;
     ButtonAnalysis: TButton;
     CheckBoxAutoSize: TCheckBox;
     CheckBoxRegEx: TCheckBox;
@@ -26,10 +25,8 @@ type
     SDF: TSdfDataSet;
     SG: TStringGrid;
     StatusBar: TStatusBar;
-    procedure ButtonMapClick(Sender: TObject);
     procedure ButtonOpenClick(Sender: TObject);
     procedure CheckBoxAutoSizeChange(Sender: TObject);
-    //function CheckColType(data: TAaString; col: Integer; RegEx: Array of String): TField;
     procedure ButtonAnalysisClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var {%H-}CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -65,7 +62,6 @@ var
     ini: TIniFile;
 begin
     Debug := False;
-    Form1.ButtonMap.Visible := False;
 
     if not FileExists(ConfigFile) then Exit;
 
@@ -73,7 +69,6 @@ begin
         ini := TIniFile.Create(ConfigFile);
             Form1.CheckBoxRegEx.Checked := ini.ReadBool('Main', 'UseRegEx', False);
             if ini.ReadBool('Main', 'Maximize', False) then Form1.WindowState := wsMaximized;
-            Form1.ButtonMap.Visible := ini.ReadBool('Main', 'Map', False);
             Debug := ini.ReadBool('Main', 'Debug', False);
             DebugCSV := ini.ReadString('Main', 'DebugCSV', 'test.csv');
             SetLength(RegEx, 3);
@@ -104,51 +99,6 @@ begin
     except
 
     end;
-end;
-
-
-function CheckColType(data: TAaString; col: Integer; Field: TField; RegEx: Array of String; UseRegEx: Boolean): TField;
-var
-    row, records: Integer;
-    s, res: String;
-begin
-    //records := Form1.SG.RowCount - 1;
-    records := Length(data[0]);
-
-    //for row := 1 to Form1.SG.RowCount - 1 do begin
-    for row := 0 to records - 1 do begin
-        s := data[col, row];
-        if length(s) > Field.length then Field.length := length(s);
-
-        //if Form1.CheckBoxRegEx.Checked
-        if UseRegEx
-            then res := CheckCellTypeRE(s, RegEx)
-            else res := CheckCellType(s);
-
-        case res of
-            'S': inc(Field.k_string);
-            'I': inc(Field.k_int);
-            'F': inc(Field.k_float);
-            'D': inc(Field.k_date);
-            'N': inc(Field.k_null);
-            'E': inc(Field.k_error);
-        end;
-
-        //FormMap.SG.Cells[col, row] := res;
-    end;
-
-    if records = Field.k_string + Field.k_null then Field.recommend := 'S';
-    if records = Field.k_float + Field.k_int + Field.k_null then Field.recommend := 'F';
-    if records = Field.k_int + Field.k_null then Field.recommend := 'I';
-    if records = Field.k_date + Field.k_null then Field.recommend := 'D';
-    if records = Field.k_null then Field.recommend := 'S';
-
-    Result := Field;
-end;
-
-procedure TForm1.ButtonMapClick(Sender: TObject);
-begin
-    FormMap.Show;
 end;
 
 procedure TForm1.ButtonOpenClick(Sender: TObject);
@@ -223,7 +173,6 @@ begin
     // Установить количество полей
     ColCount := SDF.FieldCount;
     SG.ColCount := ColCount;
-    FormMap.SG.ColCount := ColCount;
     FormAnalysis.ColCount := ColCount;
     FormAnalysis.SG.RowCount := ColCount + 1;
 
@@ -248,7 +197,6 @@ begin
     // Установить количество строк
     RowCount := SG.RowCount - 1;
     FormAnalysis.RowCount := RowCount;
-    FormMap.SG.RowCount := RowCount + 1;
 
     // Копия в массив data (для передачи в форму FormAnalysis)
     SetLength(data, ColCount, RowCount);
@@ -256,9 +204,6 @@ begin
     for col := 0 to ColCount - 1 do
         for row := 0 to RowCount - 1 do
             data[col, row] := SG.Cells[col, row + 1];
-
-    //ShowMessage(IntToStr(Length(data[0])));
-    // Length(data[0])
 
     FormAnalysis.data := data;
     //
@@ -287,19 +232,14 @@ begin
     Field := TField.Create;
 
     SQL := 'CREATE TABLE ' + OraTable.ToLower + chr(13)+chr(10) + '(' + chr(13)+chr(10);
-    FormMap.SG.ColCount := ColCount;
-    FormMap.SG.RowCount := RowCount + 1;
-    FormMap.SG.Rows[0] := SG.Rows[0];
-    FormMap.SG.Visible := False;
 
     FormAnalysis.SG.RowCount := ColCount + 1;
-
     FormAnalysis.SG.ColWidths[0] := 80;
 
     for col := 0 to ColCount - 1 do begin
         FieldName := SG.Cells[col, 0].ToLower;
         Field.default;
-        Field := CheckColType(data, col, Field, RegEx, CheckBoxRegEx.Checked);
+        Field := CheckColType(data[col], Field, RegEx, CheckBoxRegEx.Checked);
         FormAnalysis.SG.Cells[0, col + 1] := FieldName.ToUpper;
         FormAnalysis.SG.Cells[1, col + 1] := IntToStr(Field.k_int);
         FormAnalysis.SG.Cells[2, col + 1] := IntToStr(Field.k_float);
@@ -315,8 +255,6 @@ begin
             'S': SQL := SQL + '    ' + FieldName + ' VARCHAR2(' + IntToStr(Field.length) + '),' + chr(13)+chr(10);
         end;
     end;
-
-    FormMap.SG.Visible := True;
 
     SQL := copy(SQL, 0, Length(SQL) - 3);
     SQL := SQL + chr(13)+chr(10) + ');';

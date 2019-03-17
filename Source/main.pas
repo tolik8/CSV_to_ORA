@@ -103,11 +103,13 @@ end;
 
 procedure TForm1.ButtonOpenClick(Sender: TObject);
 begin
-    if Debug
-        then OpenDialog.FileName := StartDir + DebugCSV
-        else OpenDialog.Execute;
-
-    if FileExists(OpenDialog.FileName) then ReadCSV;
+    if Debug and FileExists(StartDir + DebugCSV) then begin
+        OpenDialog.FileName := StartDir + DebugCSV;
+        ReadCSV;
+    end else begin
+        OpenDialog.Execute;
+        if FileExists(OpenDialog.FileName) then ReadCSV;
+    end;
 
     if (RowCount > 1) and (ColCount > 1) then begin
         ButtonAnalysis.Enabled := True;

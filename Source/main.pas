@@ -42,7 +42,7 @@ type
     StartDir, OraUser, OraService, OraTable, SQL, DebugCSV: String;
     ColCount, RowCount: Integer;
     RegEx: Array of String;
-    FieldList: TStringList;
+    FieldList, FieldRecom: TStringList;
     Field: TField;
     Debug: Boolean;
     data: TAaString;
@@ -136,11 +136,12 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-    Form1.Caption := 'CSV to ORA v.0.91';
+    Form1.Caption := 'CSV to ORA v.0.92';
     StartDir := ExtractFilePath(ParamStr(0));
     OpenDialog.InitialDir := StartDir;
     read_ini(StartDir + 'config.ini');
     FieldList := TStringList.Create;
+    FieldRecom := TStringList.Create;
 end;
 
 procedure TForm1.SGSelectCell(Sender: TObject; aCol, aRow: Integer;
@@ -256,12 +257,13 @@ begin
             'D': SQL := SQL + '    ' + FieldName + ' DATE,' + chr(13)+chr(10);
             'S': SQL := SQL + '    ' + FieldName + ' VARCHAR2(' + IntToStr(Field.length) + '),' + chr(13)+chr(10);
         end;
+
+        FieldRecom.Add(Field.recommend);
     end;
 
-    SQL := copy(SQL, 0, Length(SQL) - 3);
+    SQL := Copy(SQL, 0, Length(SQL) - 3);
     SQL := SQL + chr(13)+chr(10) + ');';
     SQL := SQL + chr(13)+chr(10) + chr(13)+chr(10);
-    SQL := SQL + 'quit;';
 
     FormAnalysis.MemoSQL.Text := SQL;
 
@@ -279,6 +281,7 @@ begin
     FormAnalysis.StartDir := StartDir;
     FormAnalysis.csv := ExtractFileName(SDF.FileName);
     FormAnalysis.FieldList := FieldList;
+    FormAnalysis.FieldRecom := FieldRecom;
     FormAnalysis.EditUser.Text := OraUser;
     FormAnalysis.EditService.Text := OraService;
 

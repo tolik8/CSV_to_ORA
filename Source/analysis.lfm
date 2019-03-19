@@ -115,14 +115,14 @@ object FormAnalysis: TFormAnalysis
       TabOrder = 1
     end
   end
-  object ButtonFinish: TButton
-    Left = 633
+  object ButtonFinish1: TButton
+    Left = 368
     Height = 59
-    Top = 501
-    Width = 349
+    Top = 496
+    Width = 296
     Anchors = [akRight, akBottom]
-    Caption = 'CREATE SCRIPTS'
-    OnClick = ButtonFinishClick
+    Caption = 'CREATE SCRIPTS (SQL Loader)'
+    OnClick = ButtonFinish1Click
     TabOrder = 2
   end
   object StatusBar: TStatusBar
@@ -138,5 +138,15 @@ object FormAnalysis: TFormAnalysis
         Width = 50
       end>
     SimplePanel = False
+  end
+  object ButtonFinish2: TButton
+    Left = 686
+    Height = 59
+    Top = 496
+    Width = 296
+    Anchors = [akRight, akBottom]
+    Caption = 'CREATE SCRIPTS (SQL Insert)'
+    OnClick = ButtonFinish2Click
+    TabOrder = 4
   end
 end

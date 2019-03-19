@@ -32,6 +32,9 @@ lib/
 # My files to ignore
 *.csv
 *.log
+*.bad
 /Run.bat
+/load.sql
 /create.sql
+/insert.sql
 /loader.ctl

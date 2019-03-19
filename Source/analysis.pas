@@ -6,14 +6,16 @@ interface
 
 uses
     Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Grids, StdCtrls,
-    ExtCtrls, ComCtrls, functions, filter;
+    ExtCtrls, ComCtrls,
+    FileUtil, functions, filter, LConvEncoding, LazUTF8;
 
 type
 
     { TFormAnalysis }
 
     TFormAnalysis = class(TForm)
-        ButtonFinish: TButton;
+        ButtonFinish1: TButton;
+        ButtonFinish2: TButton;
         EditService: TEdit;
         EditUser: TEdit;
         GroupBoxOracle: TGroupBox;
@@ -24,7 +26,8 @@ type
         SG: TStringGrid;
         Splitter1: TSplitter;
         StatusBar: TStatusBar;
-        procedure ButtonFinishClick(Sender: TObject);
+        procedure ButtonFinish1Click(Sender: TObject);
+        procedure ButtonFinish2Click(Sender: TObject);
         procedure FormShow(Sender: TObject);
         procedure SGDblClick(Sender: TObject);
     private
@@ -33,7 +36,7 @@ type
        StartDir, csv: String;
        RegEx: Array of String;
        UseRegEx: Boolean;
-       FieldList: TStringList;
+       FieldList, FieldRecom: TStringList;
        ColCount, RowCount: Integer;
        data: Array of Array of String;
     end;
@@ -101,7 +104,7 @@ begin
     FormFilter.Show;
 end;
 
-procedure TFormAnalysis.ButtonFinishClick(Sender: TObject);
+procedure TFormAnalysis.ButtonFinish1Click(Sender: TObject);
 var
     FileName, TableName: String;
     s: TStrings;
@@ -109,16 +112,19 @@ begin
     s := TStringList.Create;
 
     // Create file Run.bat
-    FileName := 'Run.bat';
+    FileName := 'Run1.bat';
     if FileExists(StartDir + 'Template\' + FileName) then begin
         s.LoadFromFile(StartDir + 'Template\' + FileName);
         s.Text := StringReplace(s.Text, '#username#', EditUser.Text, [rfReplaceAll]);
         s.Text := StringReplace(s.Text, '#service#', EditService.Text, [rfReplaceAll]);
-        s.SaveToFile(StartDir + FileName);
+        s.SaveToFile(StartDir + 'Run.bat');
     end;
 
     // Create file create.sql
-    MemoSQL.Lines.SaveToFile(StartDir + 'create.sql');
+    s.Clear;
+    s.Text := MemoSQL.Lines.Text;
+    s.Add('quit;');
+    s.SaveToFile(StartDir + 'create.sql');
 
     // Create file loader.ctl
     FileName := 'loader.ctl';
@@ -132,7 +138,58 @@ begin
     end;
 
     s.Free;
+    ShowMessage('Scripts for loading in Oracle are created!');
+end;
 
+procedure TFormAnalysis.ButtonFinish2Click(Sender: TObject);
+var
+    txt, FileName, TableName: String;
+    s: TStrings;
+    col, row: Integer;
+begin
+    s := TStringList.Create;
+
+    // Create file Run.bat
+    FileName := 'Run2.bat';
+    if FileExists(StartDir + 'Template\' + FileName) then begin
+        s.LoadFromFile(StartDir + 'Template\' + FileName);
+        s.Text := StringReplace(s.Text, '#username#', EditUser.Text, [rfReplaceAll]);
+        s.Text := StringReplace(s.Text, '#service#', EditService.Text, [rfReplaceAll]);
+        s.SaveToFile(StartDir + 'Run.bat');
+    end;
+
+    // Create file load.sql
+    FileName := 'load.sql';
+    if FileExists(StartDir + 'Template\' + FileName) then
+        CopyFile(StartDir + 'Template\' + FileName, StartDir + FileName);
+
+    // Create file create.sql
+    MemoSQL.Lines.SaveToFile(StartDir + 'create.sql');
+
+    // Create file insert.sql
+    FileName := 'insert.sql';
+    TableName := GetTableName(MemoSQL.Lines);
+    s.Clear;
+
+    for row := 0 to RowCount - 1 do begin
+        s.Add('INSERT INTO ' + TableName + ' (' + FieldList.DelimitedText + ')');
+        txt := '';
+        for col := 0 to ColCount - 1 do begin
+            case FieldRecom[col] of
+                'I': txt := txt + data[col, row] + ', ';
+                'F': txt := txt + StringReplace(data[col, row], ',', '.', [rfReplaceAll]) + ', ';
+                'D': txt := txt + '''' + data[col, row] + ''', ';
+                'S': txt := txt + '''' + UTF8ToCP1251(StringReplace(data[col, row], '''', '’', [rfReplaceAll])) + ''', ';
+            end;
+        end;
+        txt := Copy(txt, 1, Length(txt) - 2);
+        s.Add('VALUES (' + txt + ');');
+        s.Add('');
+    end;
+
+    s.SaveToFile(StartDir + FileName);
+
+    s.Free;
     ShowMessage('Scripts for loading in Oracle are created!');
 end;
 

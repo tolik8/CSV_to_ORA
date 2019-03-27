@@ -111,7 +111,7 @@ begin
         if FileExists(OpenDialog.FileName) then ReadCSV;
     end;
 
-    if (RowCount > 1) and (ColCount > 1) then begin
+    if (RowCount > 1) and (ColCount > 0) then begin
         ButtonAnalysis.Enabled := True;
         CheckBoxRegEx.Visible := True;
         CheckBoxAutoSize.Visible := True;
@@ -136,7 +136,7 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-    Form1.Caption := 'CSV to ORA v.0.92';
+    Form1.Caption := 'CSV to ORA v.0.93';
     StartDir := ExtractFilePath(ParamStr(0));
     OpenDialog.InitialDir := StartDir;
     read_ini(StartDir + 'config.ini');

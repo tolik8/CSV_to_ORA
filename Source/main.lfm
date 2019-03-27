@@ -83,7 +83,7 @@ object Form1: TForm1
     AllowMultiLine = True
     Delimiter = ';'
     FirstLineAsSchema = True
-    StripTrailingDelimiters = False
+    StripTrailingDelimiters = True
     left = 288
     top = 96
   end

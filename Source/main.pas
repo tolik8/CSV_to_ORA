@@ -136,7 +136,7 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-    Form1.Caption := 'CSV to ORA v.0.93';
+    Form1.Caption := 'CSV to ORA v.0.94';
     StartDir := ExtractFilePath(ParamStr(0));
     OpenDialog.InitialDir := StartDir;
     read_ini(StartDir + 'config.ini');
@@ -284,6 +284,14 @@ begin
     FormAnalysis.FieldRecom := FieldRecom;
     FormAnalysis.EditUser.Text := OraUser;
     FormAnalysis.EditService.Text := OraService;
+
+    if (FormAnalysis.SG.Cells[5, FieldList.Count]) = '0' then begin
+        FormAnalysis.ButtonFinish1.Enabled := True;
+        FormAnalysis.ButtonFinish1.Caption := 'CREATE SCRIPTS (SQL Loader)';
+    end else begin
+        FormAnalysis.ButtonFinish1.Enabled := False;
+        FormAnalysis.ButtonFinish1.Caption := 'The last field has NULL records';
+    end;
 
     FormAnalysis.ShowModal;
 

@@ -176,10 +176,10 @@ begin
         txt := '';
         for col := 0 to ColCount - 1 do begin
             case FieldRecom[col] of
-                'I': txt := txt + data[col, row] + ', ';
-                'F': txt := txt + StringReplace(data[col, row], ',', '.', [rfReplaceAll]) + ', ';
-                'D': txt := txt + '''' + data[col, row] + ''', ';
-                'S': txt := txt + '''' + UTF8ToCP1251(StringReplace(data[col, row], '''', '’', [rfReplaceAll])) + ''', ';
+                'I': if Trim(data[col, row]) = '' then txt := txt + 'NULL' + ', ' else txt := txt + data[col, row] + ', ';
+                'F': if Trim(data[col, row]) = '' then txt := txt + 'NULL' + ', ' else txt := txt + StringReplace(data[col, row], ',', '.', [rfReplaceAll]) + ', ';
+                'D': if Trim(data[col, row]) = '' then txt := txt + 'NULL' + ', ' else txt := txt + '''' + data[col, row] + ''', ';
+                'S': if Trim(data[col, row]) = '' then txt := txt + 'NULL' + ', ' else txt := txt + '''' + UTF8ToCP1251(StringReplace(data[col, row], '''', '’', [rfReplaceAll])) + ''', ';
             end;
         end;
         txt := Copy(txt, 1, Length(txt) - 2);

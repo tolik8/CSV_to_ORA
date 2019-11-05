@@ -136,7 +136,7 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-    Form1.Caption := 'CSV to ORA v.0.94';
+    Form1.Caption := 'CSV to ORA v.0.95';
     StartDir := ExtractFilePath(ParamStr(0));
     OpenDialog.InitialDir := StartDir;
     read_ini(StartDir + 'config.ini');
@@ -274,6 +274,7 @@ begin
 end;
 
 procedure TForm1.ButtonAnalysisClick(Sender: TObject);
+var i: Integer;
 begin
     Analysis;
     FormAnalysis.UseRegEx := CheckBoxRegEx.Checked;
@@ -291,6 +292,14 @@ begin
     end else begin
         FormAnalysis.ButtonFinish1.Enabled := False;
         FormAnalysis.ButtonFinish1.Caption := 'The last field has NULL records';
+    end;
+
+    for i := 1 to FormAnalysis.SG.RowCount - 1 do begin
+        if RowCount = StrToInt(FormAnalysis.SG.Cells[5, i]) then begin
+            FormAnalysis.ButtonFinish1.Enabled := False;
+            FormAnalysis.ButtonFinish2.Enabled := False;
+            FormAnalysis.MemoSQL.Lines.Add('One of the fields is completely NULL! Delete this field!');
+        end;
     end;
 
     FormAnalysis.ShowModal;

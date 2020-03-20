@@ -27,7 +27,9 @@ object FormAnalysis: TFormAnalysis
       Font.Height = -16
       Font.Name = 'Lucida Console'
       ParentFont = False
+      ScrollBars = ssBoth
       TabOrder = 0
+      WordWrap = False
     end
     object SG: TStringGrid
       Left = 1
